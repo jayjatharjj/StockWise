@@ -13,6 +13,11 @@ const router = createRouter({
       name: 'Products',
       component: ProductsPage,
     },
+    {
+      path: '/cards',
+      name: 'Cards',
+      component: ProductsPage,
+    },
   ],
 })
 

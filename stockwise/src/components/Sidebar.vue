@@ -23,7 +23,7 @@
               >
             </li>
             <li>
-              <a href="/import" class="block px-3 py-2 text-gray-400 hover:text-white">Import</a>
+              <a href="/cards" class="block px-3 py-2 text-gray-400 hover:text-white">Stock Cards</a>
             </li>
           </ul>
         </li>
@@ -41,7 +41,7 @@ export default defineComponent({
     return {
       isOpen: true,
       isMinimized: false,
-      contentOpen: false,
+      contentOpen: true,
     }
   },
   methods: {
