@@ -12,31 +12,45 @@
             <input
               v-else
               v-model="product.name"
-              @blur="saveEdit(product)"
+              @blur="saveEdit(product, index)"
               class="w-full border rounded px-2"
               autofocus
             />
           </h3>
           <div
-        v-if="product.stock === 0"
-        class="bg-red-500 text-white px-2 py-1 rounded-full text-xs -mt-2 -mr-2"
-      >
-        Out of Stock
-      </div>
+            v-if="product.stock === 0"
+            class="bg-black text-white px-2 py-1 rounded-full text-xs ml-3"
+          >
+            Out of Stock
+          </div>
+          <div
+            v-else
+            class="text-white px-2 py-1 rounded-full text-xs ml-3"
+            :class="{
+              'bg-red-500': product.stock > 20,
+              'bg-yellow-500': product.stock >= 10 && product.stock <= 20,
+              'bg-green-500': product.stock < 10,
+            }"
+          >
+            {{ getStockStatus(product.stock) }}
+          </div>
         </div>
 
         <div class="flex items-center">
           <span class="text-gray-600">Price:</span>
           <span class="ml-2 cursor-pointer" @click="startEditing(product, 'price')">
             <span v-if="!product.editing">${{ product.price.toFixed(2) }}</span>
-            <input
-              v-else
-              v-model.number="product.price"
-              type="number"
-              step="0.01"
-              @blur="saveEdit(product)"
-              class="w-20 border rounded px-2"
-            />
+            <div v-else class="relative">
+              <input
+                v-model.number="product.price"
+                type="number"
+                step="0.01"
+                min="0"
+                @blur="saveEdit(product, index)"
+                class="w-20 border rounded px-2"
+                :class="{ 'border-red-500': priceErrorIndex === index }"
+              />
+            </div>
           </span>
         </div>
 
@@ -46,27 +60,30 @@
             <span
               class="w-3 h-3 rounded-full mr-2"
               :class="{
-                'bg-green-500': product.stock > 20,
+                'bg-black': product.stock == 0,
+                'bg-red-500': product.stock > 20,
                 'bg-yellow-500': product.stock >= 10 && product.stock <= 20,
-                'bg-red-500': product.stock < 10,
+                'bg-green-500': product.stock < 10 && product.stock > 0,
               }"
             ></span>
-            <span class="text-sm text-gray-500">
-              {{ getStockStatus(product.stock) }}
-            </span>
             <span
               v-if="product.showStock"
               class="cursor-pointer px-2"
               @click="startEditing(product, 'stock')"
             >
-              <span class="rounded px-2 bg-blue-100" v-if="!product.editing">{{ product.stock }}</span>
-              <input
-                v-else
-                v-model.number="product.stock"
-                type="number"
-                @blur="saveEdit(product)"
-                class="w-20 border rounded px-2"
-              />
+              <span class="rounded px-2 bg-blue-100" v-if="!product.editing">{{
+                product.stock
+              }}</span>
+              <div v-else class="relative">
+                <input
+                  v-model.number="product.stock"
+                  type="number"
+                  min="0"
+                  @blur="saveEdit(product, index)"
+                  class="w-20 border rounded px-2"
+                  :class="{ 'border-red-500': stockErrorIndex === index }"
+                />
+              </div>
             </span>
           </span>
         </div>
@@ -78,11 +95,11 @@
             <select
               v-else
               v-model="product.category"
-              @change="saveEdit(product)"
+              @change="saveEdit(product, index)"
               class="border rounded px-2"
             >
-              <option v-for="(cat, i) in distinctCategories" :key="i" :value="cat">
-                {{ cat }}
+              <option v-for="(category, i) in categories" :key="i" :value="category">
+                {{ category }}
               </option>
             </select>
           </span>
@@ -99,6 +116,13 @@
           >
             {{ product.showStock ? 'Hide Stock' : 'Show Stock' }}
           </button>
+          <button
+            v-if="product.editing"
+            class="text-sm px-3 py-1 rounded bg-red-100 text-gray-600"
+            @click="cancelEdit(product)"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
@@ -114,16 +138,15 @@ import { useProducts, type Product } from '@/stores/ProductSharedState'
 export default defineComponent({
   name: 'ProductCards',
   setup() {
-    const { products, distinctCategories, setProducts } = useProducts()
+    const { products, distinctCategories, getProducts, updateProductsCache } = useProducts()
 
     const startEditing = (product: any, field: string) => {
       product.editing = true
       product.editingField = field
     }
 
-    const saveEdit = (product: any) => {
+    const cancelEdit = (product: Product) => {
       product.editing = false
-      setProducts([...products.value])
     }
 
     const toggleStockVisibility = (product: any) => {
@@ -132,19 +155,59 @@ export default defineComponent({
 
     const getStockStatus = (stock: number) => {
       if (stock === 0) return 'Out of Stock'
-      if (stock < 10) return 'Low'
-      if (stock <= 20) return 'Medium'
-      return 'High'
+      if (stock < 10) return 'Low Stock'
+      if (stock <= 20) return 'Medium Stock'
+      return 'High Stock'
     }
 
     return {
       products,
       distinctCategories,
       startEditing,
-      saveEdit,
+      cancelEdit,
       toggleStockVisibility,
       getStockStatus,
+      getProducts,
+      updateProductsCache,
     }
+  },
+  data() {
+    return {
+      categories: [] as string[],
+      stockErrorIndex: -1,
+      priceErrorIndex: -1,
+    }
+  },
+  mounted() {
+    this.categories = this.distinctCategories.sort()
+  },
+  methods: {
+    saveEdit(product: Product, index: number) {
+      if (product.stock < 0) {
+        this.stockErrorIndex = index
+        product.stock = 0
+        product.editing = true
+        return
+      }
+      if (product.price < 0) {
+        this.priceErrorIndex = index
+        product.price = 0
+        product.editing = true
+        return
+      }
+      this.priceErrorIndex = -1
+      this.stockErrorIndex = -1
+      product.editing = false
+      if (index !== -1) {
+        const originalProducts = this.getProducts()
+        const updatedProducts = [
+          ...originalProducts.slice(0, index),
+          product,
+          ...originalProducts.slice(index + 1),
+        ]
+        this.updateProductsCache(updatedProducts)
+      }
+    },
   },
 })
 </script>

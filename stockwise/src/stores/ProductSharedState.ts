@@ -29,6 +29,10 @@ export function useProducts() {
     localStorage.setItem('products', JSON.stringify(newProducts))
   }
 
+  const updateProductsCache = (newProducts: Product[]) => {
+    localStorage.setItem('products', JSON.stringify(newProducts))
+  }
+
   const getProducts = () => {
     const storedProducts = localStorage.getItem('products')
     return storedProducts ? JSON.parse(storedProducts) as Product[] : []
@@ -64,6 +68,7 @@ export function useProducts() {
     products,
     setProducts,
     getProducts,
+    updateProductsCache,
     minPrice,
     maxPrice,
     minStock,

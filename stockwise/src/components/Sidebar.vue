@@ -18,12 +18,22 @@
           </button>
           <ul v-if="contentOpen" class="pl-6 mt-1 space-y-1">
             <li>
-              <a href="/products" class="block px-3 py-2 text-gray-400 hover:text-white"
-                >Stock List</a
+              <router-link
+                to="/cards"
+                class="block px-3 py-2 text-gray-400 hover:text-white"
+                active-class="text-white"
               >
+                Cards
+              </router-link>
             </li>
             <li>
-              <a href="/cards" class="block px-3 py-2 text-gray-400 hover:text-white">Stock Cards</a>
+              <router-link
+                to="/products"
+                class="block px-3 py-2 text-gray-400 hover:text-white"
+                active-class="text-white"
+              >
+                List
+              </router-link>
             </li>
           </ul>
         </li>

@@ -9,12 +9,20 @@
         <div class="container mx-auto">
           <div class="p-4">
             <div class="lg:flex lg:items-center lg:justify-between">
-              <button
-                @click="toggleFilter()"
-                class="m-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Filter
-              </button>
+              <div class="lg:flex lg:items-center lg:justify-between">
+                <button
+                  @click="toggleFilter()"
+                  class="m-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Filter
+                </button>
+                <button
+                  @click="reloadProducts()"
+                  class="m-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Refresh
+                </button>
+              </div>
               <button
                 @click="showModal = true"
                 class="m-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -50,6 +58,7 @@
                         class="bg-gray-200 appearance-none border-2 border-gray-200 rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
                         id="inline-full-name"
                         type="number"
+                        min="0"
                         v-model="minPrice"
                       />
                     </div>
@@ -64,12 +73,13 @@
                         class="bg-gray-200 appearance-none border-2 border-gray-200 rounded py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
                         id="inline-full-name"
                         type="number"
+                        min="0  "
                         v-model="minStock"
                       />
                     </div>
                     <div class="w-1/4">
                       <label class="md:w-2/3 block text-gray-500 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" />
+                        <input class="mr-2 leading-tight" type="checkbox" @click="outOfStock = !outOfStock"/>
                         <span class="text-sm"> Out of Stock </span>
                       </label>
                     </div>
@@ -78,9 +88,9 @@
                         class="absolute w-56 max-h-[100px] overflow-y-auto rounded-md bg-white focus:outline-hidden"
                       >
                         <div class="py-1 bg-gray-100" role="none">
-                          <div v-for="(category, index) in distinctCategories" :key="index">
+                          <div v-for="(category, index) in categories" :key="index">
                             <label class="md:w-2/3 block text-gray-500 font-bold">
-                              <input class="mr-2 leading-tight" type="checkbox" />
+                              <input class="mr-2 leading-tight" type="checkbox" @click="toggleFilterCategory(category)"/>
                               <span class="text-sm"> {{ category }} </span>
                             </label>
                           </div>
@@ -119,7 +129,7 @@
                     </div>
                     <div class="w-1/4">
                       <label class="md:w-2/3 block text-gray-500 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" />
+                        <input class="mr-2 leading-tight" type="checkbox" @click="lowStock = !lowStock"/>
                         <span class="text-sm"> Low on Stocks </span>
                       </label>
                     </div>
@@ -139,13 +149,12 @@
                 </div>
               </div>
             </transition>
-            <ProductCards />
-            <!-- <ProductTable /> -->
+            <RouterView></RouterView>
             <div
               v-if="showModal"
               class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
             >
-              <div class="bg-white dark:bg-gray-800 rounded-lg w-96">
+              <div class="bg-white dark:bg-gray-700 rounded-lg w-96">
                 <div class="flex justify-between items-center mb-4 p-6 border-b-2">
                   <h2 class="text-xl font-bold dark:text-gray-200">Import CSV</h2>
                   <button @click="closeModal" class="text-gray-600 dark:text-gray-300">
@@ -176,21 +185,19 @@
 import { defineComponent, ref } from 'vue'
 import HeaderComponent from '@/components/Header.vue'
 import SidebarComponent from '@/components/Sidebar.vue'
-import ProductTable from '@/views/Products.vue'
-import ProductCards from '@/views/Cards.vue'
 import Swal from 'sweetalert2'
 import { useProducts, type Product } from '@/stores/ProductSharedState'
+import { RouterView } from 'vue-router'
 
 export default defineComponent({
   name: 'LandingPage',
   components: {
     HeaderComponent,
     SidebarComponent,
-    ProductTable,
-    ProductCards
+    RouterView,
   },
   setup() {
-    const {
+    let {
       products,
       setProducts,
       getProducts,
@@ -201,6 +208,7 @@ export default defineComponent({
       distinctProducts,
       distinctCategories,
     } = useProducts()
+
     let loadingSwal: ReturnType<typeof Swal.fire>
     const Loading = (message: string) => {
       loadingSwal = Swal.fire({
@@ -248,14 +256,17 @@ export default defineComponent({
         },
       })
     }
+
     const showModal = ref(false)
     const closeModal = () => {
       showModal.value = false
     }
+
     const showFilter = ref(false)
     const toggleFilter = () => {
       showFilter.value = !showFilter.value
     }
+
     const parseCSV = (csvText: string): Product[] => {
       const lines = csvText.trim().split('\n')
       const dataLines = lines.slice(1)
@@ -291,17 +302,6 @@ export default defineComponent({
       }
     }
 
-    const applyFilter = () => {
-      const originalProducts: Product[] = getProducts()
-      products.value = originalProducts.filter(
-        (product) =>
-          product.price >= minPrice.value &&
-          product.price <= maxPrice.value &&
-          product.stock >= minStock.value &&
-          product.stock <= maxStock.value,
-      )
-    }
-
     return {
       products,
       minPrice,
@@ -310,7 +310,6 @@ export default defineComponent({
       maxStock,
       distinctProducts,
       distinctCategories,
-      applyFilter,
       showModal,
       closeModal,
       handleFileUpload,
@@ -319,7 +318,50 @@ export default defineComponent({
       saveFail,
       showFilter,
       toggleFilter,
+      getProducts
     }
   },
+  data() {
+    return {
+      lowStock: false as boolean,
+      outOfStock: false as boolean,
+      categories: [] as string[],
+      filterCategory: [] as string[]
+    }
+  },
+  mounted() {
+    this.categories = this.distinctCategories.sort()
+  },
+  methods: {
+    applyFilter() {
+      const originalProducts: Product[] = this.getProducts()
+      this.products = originalProducts.filter(
+        (product) =>
+          product.price >= this.minPrice &&
+          product.price <= this.maxPrice &&
+          product.stock >= this.minStock &&
+          product.stock <= this.maxStock,
+      )
+      if ((this.outOfStock) && (this.lowStock) || this.outOfStock ) {
+        this.products = this.products.filter((product) => product.stock == 0)
+      } else if (this.lowStock) {
+        this.products = this.products.filter((product) => product.stock < 10)
+      }
+      if (this.filterCategory.length != 0) {
+        this.products = this.products.filter((product) => this.filterCategory.includes(product.category))
+      }
+    },
+    toggleFilterCategory(category: string) {
+      if (this.filterCategory.includes(category)) {
+        this.filterCategory = this.filterCategory.filter(c => c !== category)
+      } else {
+        this.filterCategory.push(category)
+      }
+      console.log(this.filterCategory);
+    },
+    reloadProducts() {
+      window.location.reload()
+    }
+  }
 })
 </script>
