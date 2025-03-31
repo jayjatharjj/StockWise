@@ -68,7 +68,7 @@
             ></span>
             <span
               v-if="product.showStock"
-              class="cursor-pointer px-2"
+              class="cursor-pointer px-1"
               @click="startEditing(product, 'stock')"
             >
               <span class="rounded px-2 bg-blue-100" v-if="!product.editing">{{
