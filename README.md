@@ -1,14 +1,6 @@
 # StockWise
 
-StockWise is a comprehensive stock management application built with a Vue.js frontend and a Node.js backend, integrated with MongoDB for data persistence. It provides real-time stock tracking, CSV import capabilities, and analytical insights.
-
-## Features
-
-- Real-time stock data visualization
-- Import/Export stock data via CSV
-- Interactive dashboard with analytics
-- Responsive and user-friendly interface
-- MongoDB database integration (optional)
+StockWise is a comprehensive stock management application built with a Vue.js frontend and a Node.js backend, integrated with MongoDB for data persistence.
 
 ## Prerequisites
 
@@ -52,11 +44,11 @@ StockWise is a comprehensive stock management application built with a Vue.js fr
    - Open `backend/index.js`
    - Replace the connection string at line 8:
      ```javascript
-     const uri = "YOUR_MONGODB_CONNECTION_STRING";
+     const CONNECTION_STRING = "YOUR_MONGODB_CONNECTION_STRING";
      ```
    - Replace the database name at line 9:
      ```javascript
-     const dbName = "YOUR_DATABASE_NAME";
+     const DATABASE_NAME = "YOUR_DATABASE_NAME";
      ```
 
 ## Running the Application
@@ -80,36 +72,25 @@ StockWise is a comprehensive stock management application built with a Vue.js fr
    ```
 2. The backend will run at:
    ```
-   http://localhost:3000
+   http://localhost:5073
    ```
 
 ## Running Without Backend
+The vue application is capable of running without backend service if needed.
 
 To use the frontend independently:
-1. Open `stockwiseUi/src/main.js`
+1. Open `stockwiseUi/src/views/LandingPage.vue`
 2. Comment out line 370:
    ```javascript
-   // axios.defaults.baseURL = 'http://localhost:3000'
+   // await productService.saveProducts(importedProducts, this.replaceData)
    ```
-3. Note: 
-   - CSV imports will reset on page reload
-   - Data persistence requires backend integration
 
 ## Important Notes
 
 - When running without backend:
   - All functionalities remain available
-  - Data persists only during current session
   - CSV imports will override existing local data
 - With backend:
   - Data persists in MongoDB
   - Requires valid connection string configuration
   - Supports full CRUD operations
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request for any improvements.
-
-## License
-
-[MIT License](LICENSE)
