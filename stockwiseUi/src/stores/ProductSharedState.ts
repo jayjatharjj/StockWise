@@ -36,32 +36,24 @@ export function useProducts() {
 
   const getProducts = () => {
     const storedProducts = localStorage.getItem('products')
-    return storedProducts ? JSON.parse(storedProducts) as Product[] : []
+    return storedProducts ? (JSON.parse(storedProducts) as Product[]) : []
   }
 
-  const minPrice = ref(
-    products.value.length ? Math.min(...products.value.map(p => p.price)) : 0
-  )
+  const minPrice = ref(products.value.length ? Math.min(...products.value.map((p) => p.price)) : 0)
 
-  const maxPrice = ref(
-    products.value.length ? Math.max(...products.value.map(p => p.price)) : 0
-  )
+  const maxPrice = ref(products.value.length ? Math.max(...products.value.map((p) => p.price)) : 0)
 
-  const minStock = ref(
-    products.value.length ? Math.min(...products.value.map(p => p.stock)) : 0
-  )
+  const minStock = ref(products.value.length ? Math.min(...products.value.map((p) => p.stock)) : 0)
 
-  const maxStock = ref(
-    products.value.length ? Math.max(...products.value.map(p => p.stock)) : 0
-  )
-  
+  const maxStock = ref(products.value.length ? Math.max(...products.value.map((p) => p.stock)) : 0)
+
   const distinctProducts = computed(() => {
-    const names = products.value.map(p => p.name)
+    const names = products.value.map((p) => p.name)
     return Array.from(new Set(names))
   })
 
   const distinctCategories = computed(() => {
-    const categories = products.value.map(p => p.category)
+    const categories = products.value.map((p) => p.category)
     return Array.from(new Set(categories))
   })
 
@@ -76,6 +68,6 @@ export function useProducts() {
     maxStock,
     distinctProducts,
     distinctCategories,
-    defaultProducts
+    defaultProducts,
   }
 }

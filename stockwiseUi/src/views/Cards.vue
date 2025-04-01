@@ -29,8 +29,9 @@
       <div class="space-y-2">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold cursor-pointer" @click="startEditing(product, 'name')">
-            <span v-if="!product.editing" 
-            :title="product.name.length > 20 ? product.name : ''">{{ product.name.length > 20 ? product.name.slice(0, 20) + '...'  : product.name }}</span>
+            <span v-if="!product.editing" :title="product.name.length > 20 ? product.name : ''">{{
+              product.name.length > 20 ? product.name.slice(0, 20) + '...' : product.name
+            }}</span>
             <input
               v-else
               v-model="product.name"

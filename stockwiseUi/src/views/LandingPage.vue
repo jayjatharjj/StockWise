@@ -367,7 +367,7 @@ export default defineComponent({
           const csvText = event.target?.result as string
           try {
             const importedProducts = this.parseCSV(csvText)
-            await productService.saveProducts(importedProducts, this.replaceData);
+            await productService.saveProducts(importedProducts, this.replaceData)
             this.setProducts(importedProducts)
           } catch (error) {
             console.error('Error parsing CSV', error)

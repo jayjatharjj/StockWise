@@ -5,8 +5,8 @@ const cors = require('cors');
 const app = Express();
 app.use(cors());
 
-const CONNECTION_STRING = "mongodb+srv://jayjatharjj:jayj12345@cluster0.lraqrdc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const DATABASE_NAME = "stockwisedb";
+const CONNECTION_STRING = "YOUR_MONGODB_CONNECTION_STRING";
+const DATABASE_NAME = "YOUR_DATABASE_NAME";
 let database;
 
 console.log("Starting server...");

@@ -6,10 +6,26 @@
     >
       <thead class="bg-gray-600">
         <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100">Name</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100">Price</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100">Stock</th>
-          <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100">Category</th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100"
+          >
+            Name
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100"
+          >
+            Price
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100"
+          >
+            Stock
+          </th>
+          <th
+            class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-100"
+          >
+            Category
+          </th>
         </tr>
       </thead>
       <tbody class="divide-y bg-gray-700 divide-gray-600 text-gray-100">
