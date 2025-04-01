@@ -154,15 +154,26 @@
               v-if="showModal"
               class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
             >
-              <div class="bg-white dark:bg-gray-700 rounded-lg w-96">
+              <div class="bg-white rounded-lg w-96">
                 <div class="flex justify-between items-center mb-4 p-6 border-b-2">
-                  <h2 class="text-xl font-bold dark:text-gray-200">Import CSV</h2>
-                  <button @click="closeModal" class="text-gray-600 dark:text-gray-300">
+                  <h2 class="text-xl font-bold">Import CSV</h2>
+                  <button @click="closeModal" class="text-gray-600">
                     &times;
                   </button>
                 </div>
-                <div class="justify-between items-center p-6">
-                  <input type="file" accept=".csv" @change="handleFileUpload" />
+                <div class="justify-between items-center p-6 py-3">
+                  <div class="text-blue-500 ml-2">Existing data found. How would you like to proceed?</div>
+                  <div class="flex m-4">
+                    <label class="md:w-2/3 block text-gray-800 font-bold">
+                        <input class="mr-2 leading-tight" type="checkbox" v-model="replaceData" @click="toggleDataState()"/>
+                        <span class="text-sm"> Replace data </span>
+                      </label>
+                      <label class="md:w-2/3 block text-gray-800 font-bold">
+                        <input class="mr-2 leading-tight" type="checkbox" v-model="updateCSVData" @click="toggleDataState()"/>
+                        <span class="text-sm"> Update data </span>
+                      </label>
+                  </div>
+                  <input class="m-4" type="file" accept=".csv" @change="handleFileUpload" />
                   <div class="mt-4 flex justify-end">
                     <button
                       @click="closeModal"
@@ -188,6 +199,7 @@ import SidebarComponent from '@/components/Sidebar.vue'
 import Swal from 'sweetalert2'
 import { useProducts, type Product } from '@/stores/ProductSharedState'
 import { RouterView } from 'vue-router'
+import { productService } from '@/api/productsApi'
 
 export default defineComponent({
   name: 'LandingPage',
@@ -207,6 +219,7 @@ export default defineComponent({
       maxStock,
       distinctProducts,
       distinctCategories,
+      defaultProducts
     } = useProducts()
 
     let loadingSwal: ReturnType<typeof Swal.fire>
@@ -281,27 +294,6 @@ export default defineComponent({
       })
     }
 
-    const handleFileUpload = (e: Event) => {
-      Loading('Import data from CSV')
-      const target = e.target as HTMLInputElement
-      if (target.files && target.files.length > 0) {
-        const file = target.files[0]
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          const csvText = event.target?.result as string
-          try {
-            const importedProducts = parseCSV(csvText)
-            setProducts(importedProducts)
-          } catch (error) {
-            console.error('Error parsing CSV', error)
-            saveFail('Import failed, Please try again')
-          }
-          saveSuccess('Data imported successfully')
-        }
-        reader.readAsText(file)
-      }
-    }
-
     return {
       products,
       minPrice,
@@ -312,13 +304,15 @@ export default defineComponent({
       distinctCategories,
       showModal,
       closeModal,
-      handleFileUpload,
       Loading,
       saveSuccess,
       saveFail,
       showFilter,
       toggleFilter,
-      getProducts
+      setProducts,
+      getProducts,
+      defaultProducts,
+      parseCSV
     }
   },
   data() {
@@ -326,13 +320,42 @@ export default defineComponent({
       lowStock: false as boolean,
       outOfStock: false as boolean,
       categories: [] as string[],
-      filterCategory: [] as string[]
+      filterCategory: [] as string[],
+      replaceData: false,
+      updateCSVData: true
     }
   },
-  mounted() {
+  async mounted() {
     this.categories = this.distinctCategories.sort()
+    const savedProducts: Product[] = await productService.loadProducts();
+    if (savedProducts.length === 0) {
+      await productService.saveProducts(this.defaultProducts, false);
+    } else {
+      this.setProducts(savedProducts);
+    }
   },
   methods: {
+    handleFileUpload(e: Event) {
+      this.Loading('Import data from CSV')
+      const target = e.target as HTMLInputElement
+      if (target.files && target.files.length > 0) {
+        const file = target.files[0]
+        const reader = new FileReader()
+        reader.onload = async (event) => {
+          const csvText = event.target?.result as string
+          try {
+            const importedProducts = this.parseCSV(csvText)
+            await productService.saveProducts(importedProducts, this.replaceData);
+            this.setProducts(importedProducts)
+          } catch (error) {
+            console.error('Error parsing CSV', error)
+            this.saveFail('Import failed, Please try again')
+          }
+          this.saveSuccess('Data imported successfully')
+        }
+        reader.readAsText(file)
+      }
+    },
     applyFilter() {
       const originalProducts: Product[] = this.getProducts()
       this.products = originalProducts.filter(
@@ -357,10 +380,13 @@ export default defineComponent({
       } else {
         this.filterCategory.push(category)
       }
-      console.log(this.filterCategory);
     },
     reloadProducts() {
       window.location.reload()
+    },
+    toggleDataState() {
+      this.replaceData = !this.replaceData;
+      this.updateCSVData = !this.updateCSVData;
     }
   }
 })

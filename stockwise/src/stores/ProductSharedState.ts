@@ -1,6 +1,7 @@
 import { ref, computed, watch } from 'vue'
 
 export interface Product {
+  _id?: string
   name: string
   price: number
   stock: number
@@ -12,10 +13,10 @@ export interface Product {
 
 const cachedProducts = localStorage.getItem('products')
 const defaultProducts: Product[] = [
-  { name: 'Product A', price: 29.99, stock: 100, category: 'Electronics' },
-  { name: 'Product B', price: 49.99, stock: 50, category: 'Books' },
-  { name: 'Product C', price: 19.99, stock: 150, category: 'Clothing' },
-  { name: 'Product D', price: 99.99, stock: 20, category: 'Sports' },
+  { name: 'Smartphone', price: 29.99, stock: 1, category: 'Electronics' },
+  { name: 'Novel', price: 49.99, stock: 50, category: 'Books' },
+  { name: 'Jacket', price: 19.99, stock: 15, category: 'Clothing' },
+  { name: 'Racket', price: 99.99, stock: 21, category: 'Sports' },
 ]
 
 let products = ref<Product[]>(cachedProducts ? JSON.parse(cachedProducts) : defaultProducts)
@@ -74,6 +75,7 @@ export function useProducts() {
     minStock,
     maxStock,
     distinctProducts,
-    distinctCategories
+    distinctCategories,
+    defaultProducts
   }
 }
