@@ -79,7 +79,11 @@
                     </div>
                     <div class="w-1/4">
                       <label class="md:w-2/3 block text-gray-500 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" @click="outOfStock = !outOfStock"/>
+                        <input
+                          class="mr-2 leading-tight"
+                          type="checkbox"
+                          @click="outOfStock = !outOfStock"
+                        />
                         <span class="text-sm"> Out of Stock </span>
                       </label>
                     </div>
@@ -90,7 +94,11 @@
                         <div class="py-1 bg-gray-100" role="none">
                           <div v-for="(category, index) in categories" :key="index">
                             <label class="md:w-2/3 block text-gray-500 font-bold">
-                              <input class="mr-2 leading-tight" type="checkbox" @click="toggleFilterCategory(category)"/>
+                              <input
+                                class="mr-2 leading-tight"
+                                type="checkbox"
+                                @click="toggleFilterCategory(category)"
+                              />
                               <span class="text-sm"> {{ category }} </span>
                             </label>
                           </div>
@@ -129,7 +137,11 @@
                     </div>
                     <div class="w-1/4">
                       <label class="md:w-2/3 block text-gray-500 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" @click="lowStock = !lowStock"/>
+                        <input
+                          class="mr-2 leading-tight"
+                          type="checkbox"
+                          @click="lowStock = !lowStock"
+                        />
                         <span class="text-sm"> Low on Stocks </span>
                       </label>
                     </div>
@@ -157,21 +169,31 @@
               <div class="bg-white rounded-lg w-96">
                 <div class="flex justify-between items-center mb-4 p-6 border-b-2">
                   <h2 class="text-xl font-bold">Import CSV</h2>
-                  <button @click="closeModal" class="text-gray-600">
-                    &times;
-                  </button>
+                  <button @click="closeModal" class="text-gray-600">&times;</button>
                 </div>
                 <div class="justify-between items-center p-6 py-3">
-                  <div class="text-blue-500 ml-2">Existing data found. How would you like to proceed?</div>
+                  <div class="text-blue-500 ml-2">
+                    Existing data found. How would you like to proceed?
+                  </div>
                   <div class="flex m-4">
                     <label class="md:w-2/3 block text-gray-800 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" v-model="replaceData" @click="toggleDataState()"/>
-                        <span class="text-sm"> Replace data </span>
-                      </label>
-                      <label class="md:w-2/3 block text-gray-800 font-bold">
-                        <input class="mr-2 leading-tight" type="checkbox" v-model="updateCSVData" @click="toggleDataState()"/>
-                        <span class="text-sm"> Update data </span>
-                      </label>
+                      <input
+                        class="mr-2 leading-tight"
+                        type="checkbox"
+                        v-model="replaceData"
+                        @click="toggleDataState()"
+                      />
+                      <span class="text-sm"> Replace data </span>
+                    </label>
+                    <label class="md:w-2/3 block text-gray-800 font-bold">
+                      <input
+                        class="mr-2 leading-tight"
+                        type="checkbox"
+                        v-model="updateCSVData"
+                        @click="toggleDataState()"
+                      />
+                      <span class="text-sm"> Update data </span>
+                    </label>
                   </div>
                   <input class="m-4" type="file" accept=".csv" @change="handleFileUpload" />
                   <div class="mt-4 flex justify-end">
@@ -219,7 +241,7 @@ export default defineComponent({
       maxStock,
       distinctProducts,
       distinctCategories,
-      defaultProducts
+      defaultProducts,
     } = useProducts()
 
     let loadingSwal: ReturnType<typeof Swal.fire>
@@ -312,7 +334,7 @@ export default defineComponent({
       setProducts,
       getProducts,
       defaultProducts,
-      parseCSV
+      parseCSV,
     }
   },
   data() {
@@ -322,17 +344,17 @@ export default defineComponent({
       categories: [] as string[],
       filterCategory: [] as string[],
       replaceData: false,
-      updateCSVData: true
+      updateCSVData: true,
     }
   },
   async mounted() {
     this.categories = this.distinctCategories.sort()
-    const savedProducts: Product[] = await productService.loadProducts();
+    let savedProducts: Product[] = await productService.loadProducts()
     if (savedProducts.length === 0) {
-      await productService.saveProducts(this.defaultProducts, false);
-    } else {
-      this.setProducts(savedProducts);
+      await productService.saveProducts(this.defaultProducts, false)
+      savedProducts = this.defaultProducts
     }
+    this.setProducts(savedProducts)
   },
   methods: {
     handleFileUpload(e: Event) {
@@ -365,18 +387,20 @@ export default defineComponent({
           product.stock >= this.minStock &&
           product.stock <= this.maxStock,
       )
-      if ((this.outOfStock) && (this.lowStock) || this.outOfStock ) {
+      if ((this.outOfStock && this.lowStock) || this.outOfStock) {
         this.products = this.products.filter((product) => product.stock == 0)
       } else if (this.lowStock) {
         this.products = this.products.filter((product) => product.stock < 10)
       }
       if (this.filterCategory.length != 0) {
-        this.products = this.products.filter((product) => this.filterCategory.includes(product.category))
+        this.products = this.products.filter((product) =>
+          this.filterCategory.includes(product.category),
+        )
       }
     },
     toggleFilterCategory(category: string) {
       if (this.filterCategory.includes(category)) {
-        this.filterCategory = this.filterCategory.filter(c => c !== category)
+        this.filterCategory = this.filterCategory.filter((c) => c !== category)
       } else {
         this.filterCategory.push(category)
       }
@@ -385,9 +409,9 @@ export default defineComponent({
       window.location.reload()
     },
     toggleDataState() {
-      this.replaceData = !this.replaceData;
-      this.updateCSVData = !this.updateCSVData;
-    }
-  }
+      this.replaceData = !this.replaceData
+      this.updateCSVData = !this.updateCSVData
+    },
+  },
 })
 </script>
